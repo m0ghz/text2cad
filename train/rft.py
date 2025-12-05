@@ -89,12 +89,13 @@ class CADBanditEnv(Env):
         soft_limit = self._max_tokens * 0.75
         token_count = len(action)
         max_penalty = 0.5
-        power = 3.0
+        power = 7.0
         
         ratio = token_count / soft_limit
         length_penalty = max_penalty * (ratio ** power)
         
         final_reward = reward_info.reward - length_penalty
+        final_reward = max(final_reward, -1.0)
 
         if token_count > soft_limit:
             LOGGER.warning(
@@ -276,6 +277,8 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--max-prompts", type=int, default=None, help="Optional cap on prompts used for training")
     parser.add_argument("--seed", type=int, default=None, help="Seed for shuffling prompts")
     parser.add_argument("--resume-from", type=str, default=None, help="Tinker checkpoint URI to resume from (e.g. tinker://...)")
+    parser.add_argument("--wandb-project", type=str, default=None, help="Weights & Biases project name")
+    parser.add_argument("--wandb-run-name", type=str, default=None, help="Weights & Biases run name")
     return parser.parse_args()
 
 
@@ -311,6 +314,8 @@ async def _build_config(args: argparse.Namespace) -> rl_train.Config:
         eval_every=0,  # disable default eval hooks
         save_every=10,
         load_checkpoint_path=args.resume_from,
+        wandb_project=args.wandb_project,
+        wandb_name=args.wandb_run_name,
     )
     return cfg
 
