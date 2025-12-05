@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from torch.utils.tensorboard import SummaryWriter
 
-def sync_jsonl_to_tensorboard(jsonl_path: Path, log_dir: Path, interval: float = 2.0):
+def sync_jsonl_to_tensorboard(jsonl_path: Path, log_dir: Path, interval: float = 2.0, offset_step: int = 0):
     """
     Continuously reads a jsonl file and writes new entries to TensorBoard.
     """
@@ -14,7 +14,7 @@ def sync_jsonl_to_tensorboard(jsonl_path: Path, log_dir: Path, interval: float =
         while not jsonl_path.exists():
             time.sleep(interval)
 
-    print(f"Syncing {jsonl_path} to TensorBoard logs at {log_dir}")
+    print(f"Syncing {jsonl_path} to TensorBoard logs at {log_dir} (offset_step={offset_step})")
     
     # Create the writer
     writer = SummaryWriter(log_dir=str(log_dir))
@@ -39,6 +39,9 @@ def sync_jsonl_to_tensorboard(jsonl_path: Path, log_dir: Path, interval: float =
                             step = data.get('step')
                             if step is None:
                                 continue
+                            
+                            # Apply offset
+                            step += offset_step
                                 
                             # Log all numeric values
                             for key, value in data.items():
@@ -62,6 +65,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Sync metrics.jsonl to TensorBoard")
     parser.add_argument("jsonl_file", type=Path, help="Path to metrics.jsonl")
     parser.add_argument("--log-dir", type=Path, default=None, help="Directory for TensorBoard logs")
+    parser.add_argument("--offset-step", type=int, default=0, help="Add this offset to the step number")
     
     args = parser.parse_args()
     
@@ -69,5 +73,5 @@ if __name__ == "__main__":
         # Default to a 'tb_logs' folder next to the metrics file
         args.log_dir = args.jsonl_file.parent / "tb_logs"
         
-    sync_jsonl_to_tensorboard(args.jsonl_file, args.log_dir)
+    sync_jsonl_to_tensorboard(args.jsonl_file, args.log_dir, offset_step=args.offset_step)
 

@@ -174,13 +174,7 @@ class RewardEvaluator:
             judge_weight=self._judge_weight,
             scoring_config=self._scoring_config,
         )
-        LOGGER.info(
-            "Sample %s: reward %.3f (compiled=%s, judge=%.2f)",
-            sample_id,
-            reward,
-            "yes" if compilation.success else "no",
-            judge_response.score,
-        )
+        
         return RewardComputation(
             prompt=prompt,
             cad_code=cad_code,

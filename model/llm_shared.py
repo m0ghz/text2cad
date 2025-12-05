@@ -10,7 +10,7 @@ Requirements:
 - Return the final geometry by defining a `build()` function that creates and
   returns the cadquery Workplane/Assembly.
 - Ensure the script only imports cadquery (as `cq`) and standard-library modules.
-- Output must be plain Python source with no Markdown fences or commentary (avoid ```).
+- Output must be wrapped in a ```python code block.
 - Avoid jittery randomness so the output is deterministic.
 
-Only return the Python code."""
+Only return the Python code wrapped in markdown fences. End your code with the string END_OF_CODE."""
