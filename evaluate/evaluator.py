@@ -25,6 +25,7 @@ from .generator import BaseGenerator
 from model.gemini_llm_generator import GeminiAPIGenerator
 from model.hf_llm_generator import HuggingFaceAPIGenerator
 from model.openai_llm_generator import OpenAIAPIGenerator
+from utils.code_cleaning import sanitize_cad_code
 
 
 @dataclass
@@ -243,7 +244,7 @@ class Evaluator:
             gen_start = time.perf_counter()
             try:
                 cad_code_raw = self._generator.generate(prompt)
-                cad_code = str(cad_code_raw)
+                cad_code = sanitize_cad_code(str(cad_code_raw))
             except Exception as exc:  # pragma: no cover - defensive
                 cad_code = ""
                 compilation_result = CADCompilationResult(
@@ -278,6 +279,13 @@ class Evaluator:
                     compile_duration,
                     len(compilation_result.image_paths),
                 )
+                
+                if not compilation_result.success:
+                    self._logger.error(
+                        "Sample %s: raw model output before cleanup:\n%s",
+                        sample_id,
+                        str(cad_code_raw)
+                    )
 
             try:
                 self._logger.info("Sample %s: invoking LLM judge", sample_id)

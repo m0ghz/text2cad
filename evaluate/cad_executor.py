@@ -119,11 +119,12 @@ class CADExecutor:
             except subprocess.TimeoutExpired as exc:  # pragma: no cover
                 elapsed = time.perf_counter() - start
                 self._logger.error(
-                    "Sample %s: runtime timed out after %.2fs. stdout=%s stderr=%s",
+                    "Sample %s: runtime timed out after %.2fs. stdout=%s stderr=%s\nCode:\n%s",
                     sample_id,
                     elapsed,
                     exc.stdout,
                     exc.stderr,
+                    cad_code,
                 )
                 return CADCompilationResult(
                     success=False,
@@ -146,10 +147,11 @@ class CADExecutor:
 
         if completed.returncode != 0:
             self._logger.error(
-                "Sample %s: runtime failed. stdout=%s stderr=%s",
+                "Sample %s: runtime failed. stdout=%s stderr=%s\nCode:\n%s",
                 sample_id,
                 stdout,
                 stderr,
+                cad_code,
             )
             return CADCompilationResult(
                 success=False,
@@ -164,10 +166,11 @@ class CADExecutor:
             payload = json.loads(stdout.strip().splitlines()[-1])
         except (json.JSONDecodeError, IndexError) as exc:
             self._logger.error(
-                "Sample %s: runtime output was not valid JSON. stdout=%s stderr=%s",
+                "Sample %s: runtime output was not valid JSON. stdout=%s stderr=%s\nCode:\n%s",
                 sample_id,
                 stdout,
                 stderr,
+                cad_code,
             )
             return CADCompilationResult(
                 success=False,
@@ -180,9 +183,10 @@ class CADExecutor:
 
         if not payload.get("success", False):
             self._logger.error(
-                "Sample %s: runtime reported failure payload=%s",
+                "Sample %s: runtime reported failure payload=%s\nCode:\n%s",
                 sample_id,
                 payload,
+                cad_code,
             )
             return CADCompilationResult(
                 success=False,
